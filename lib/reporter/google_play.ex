@@ -2,6 +2,11 @@ defmodule Reporter.GooglePlay do
 
   defp droid_uri, do: Application.get_env(:reporter, :droid_uri, "https://play.google.com/store/getreviews")
 
+  defp droid_query_string_params, do: "xhr=1&reviewSortOrder=0&reviewType=1"
+
+  defp droid_details_uri, do: Application.get_env(:reporter, :droid_details_uri, "https://play.google.com/store/apps/details")
+
+
   @doc ~S"""
   Return list of class 'single-review'.
 
@@ -256,9 +261,12 @@ defmodule Reporter.GooglePlay do
 
   """
   @spec review_url(String.t, String.t) :: String.t
-  def review_url(droid_package, locale \\ "en"), do: droid_uri <> "?" <> params(droid_package, locale)
+  def review_url(droid_package, locale \\ "en"), do: droid_uri <> "?" <> params(droid_package, locale, droid_query_string_params)
 
-  defp params(droid_package, locale \\ "en"), do: post_message(droid_package, "0", locale)
+  defp params(droid_package, locale \\ "en", query_string_params) do
+    query_string_params = query_string_params <> "&pageNum=0"
+    post_message(droid_package, locale, query_string_params)
+  end
 
 
   @doc ~S"""
@@ -275,20 +283,41 @@ defmodule Reporter.GooglePlay do
   """
   @spec review_url_with_page(String.t, String.t, String.t) :: String.t
   def review_url_with_page(droid_package, page_num ,locale \\ "en") do
-    droid_uri <> "?" <> params_with_page(droid_package, page_num, locale)
+    IO.inspect droid_package
+    droid_uri <> "?" <> params_with_page(droid_package, page_num, locale, droid_query_string_params)
   end
 
-  def params_with_page(droid_package, page_num, locale \\ "en"), do: post_message(droid_package, page_num, locale)
+  def params_with_page(droid_package, page_num, locale \\ "en", query_string_params \\ "") do
+    query_string_params = query_string_params <> "&pageNum=#{page_num}"
+    post_message(droid_package, locale, query_string_params)
+  end
 
-  defp post_message(droid_package, page_num, locale) do
+  defp post_message(droid_package, locale, query_string_params) do
     Enum.join([
       "id=",
       droid_package,
-      "&xhr=1&reviewSortOrder=0&reviewType=1&pageNum=",
-      page_num,
       "&hl=",
-      locale
+      locale,
+      "&",
+      query_string_params
       ]
     ) |> URI.encode
   end
+
+  def params_for_details(droid_package, locale \\ "en") do
+    post_message(droid_package, locale, "")
+  end
+
+  def app_details(droid_package, locale \\ "en") do
+    droid_details_uri <> "?" <> params_for_details(droid_package, locale)
+  end
+
+  def app_version(parsed_html) do
+    Floki.find(parsed_html, ".content[itemprop=softwareVersion]") |> List.first |> elem(2) |> List.first |> String.strip
+  end
+
+  def app_image_url(parsed_html) do
+    Floki.find(parsed_html, ".cover-image") |> List.first |> elem(1) |> Enum.drop(1) |> List.first |> elem(1) |> String.replace("//", "http://")
+  end
+
 end
