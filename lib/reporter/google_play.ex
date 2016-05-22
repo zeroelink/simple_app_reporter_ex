@@ -282,8 +282,7 @@ defmodule Reporter.GooglePlay do
 
   """
   @spec review_url_with_page(String.t, String.t, String.t) :: String.t
-  def review_url_with_page(droid_package, page_num ,locale \\ "en") do
-    IO.inspect droid_package
+  def review_url_with_page(droid_package, page_num ,locale \\ "en") do    
     droid_uri <> "?" <> params_with_page(droid_package, page_num, locale, droid_query_string_params)
   end
 

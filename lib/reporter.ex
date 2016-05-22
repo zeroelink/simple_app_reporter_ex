@@ -77,8 +77,7 @@ defmodule Reporter do
   @spec google_play!(String.t, String.t, Integer.t) :: list
   def google_play!(package, locale \\ "en", page_number \\ 1) do
     headers = [{"Accept", "text/html; charset=UTF-8"}]
-    test = GooglePlay.review_url_with_page(package, Integer.to_string(page_number)  , locale)
-    IO.inspect test
+    
     HTTPoison.post(GooglePlay.review_url_with_page(package, Integer.to_string(page_number)  , locale), "", headers)
     |> get_body!
   end
