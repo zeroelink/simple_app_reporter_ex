@@ -20,7 +20,7 @@ defmodule Reporter.Mixfile do
 
   def application do
     [
-      applications: [:httpoison, :poison]
+      applications: [:httpoison, :poison, :timex]
     ]
   end
 
@@ -32,7 +32,8 @@ defmodule Reporter.Mixfile do
       {:floki, "~> 0.8"},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev},
-      {:dialyze, "~> 0.2.0", only: :dev}
+      {:dialyze, "~> 0.2.0", only: :dev},
+      {:timex, "~> 2.1.4"},
     ]
   end
 

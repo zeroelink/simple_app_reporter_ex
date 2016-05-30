@@ -1,5 +1,5 @@
 defmodule Reporter.GooglePlay do
-
+  use Timex
   defp droid_uri, do: Application.get_env(:reporter, :droid_uri, "https://play.google.com/store/getreviews")
 
   defp droid_query_string_params, do: "xhr=1&reviewSortOrder=0&reviewType=1"
@@ -282,13 +282,18 @@ defmodule Reporter.GooglePlay do
 
   """
   @spec review_url_with_page(String.t, String.t, String.t) :: String.t
-  def review_url_with_page(droid_package, page_num ,locale \\ "en") do    
+  def review_url_with_page(droid_package, page_num ,locale \\ "en") do
     droid_uri <> "?" <> params_with_page(droid_package, page_num, locale, droid_query_string_params)
   end
 
   def params_with_page(droid_package, page_num, locale \\ "en", query_string_params \\ "") do
-    query_string_params = query_string_params <> "&pageNum=#{page_num}"
+    query_string_params = query_string_params <> "&pageNum=#{page_num}" <> "&" <> cache_buster_query_param
     post_message(droid_package, locale, query_string_params)
+  end
+
+  defp cache_buster_query_param do
+    {:ok, date} = DateTime.local |> Timex.format("{ISO}")
+    "current_date_time=" <> date
   end
 
   defp post_message(droid_package, locale, query_string_params) do
@@ -305,6 +310,10 @@ defmodule Reporter.GooglePlay do
 
   def params_for_details(droid_package, locale \\ "en") do
     post_message(droid_package, locale, "")
+  end
+
+  def app_name(parsed_html) do
+    Floki.find(parsed_html, ".id-app-title") |> List.first |> elem(2) |> List.first
   end
 
   def app_details(droid_package, locale \\ "en") do
