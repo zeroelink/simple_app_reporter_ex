@@ -328,4 +328,12 @@ defmodule Reporter.GooglePlay do
     Floki.find(parsed_html, ".cover-image") |> List.first |> elem(1) |> Enum.drop(1) |> List.first |> elem(1) |> String.replace("//", "http://")
   end
 
+  def app_total_reviews(parsed_html) do
+    Floki.find(parsed_html, ".reviews-num") |> List.first |> elem(2) |> List.first |> String.replace(",", "") |> String.to_integer
+  end
+
+  def app_avg_review(parsed_html) do
+    Floki.find(parsed_html, ".score") |> List.first |> elem(2) |> List.first |> String.to_float
+  end
+
 end
